@@ -53,7 +53,36 @@ Add `--force` to send email even if nothing is new (useful for testing):
 python main.py --force
 ```
 
-## Scheduling (Mac cron — every 2 hours)
+## GitHub Actions (recommended — no Mac needed)
+
+The workflow at `.github/workflows/trend-monitor.yml` runs every 3 hours automatically. State is committed back to the repo after each run so deduplication persists.
+
+### 1. Add Secrets
+
+Go to **Settings → Secrets and variables → Actions → New repository secret** and add:
+
+| Secret name | Value |
+|---|---|
+| `GMAIL_USER` | `vipulagarwal.in@gmail.com` |
+| `GMAIL_APP_PASSWORD` | Your Gmail app password |
+| `TO_EMAIL` | `vipulagarwal.in@gmail.com` |
+| `GH_PAT` | A GitHub personal access token (optional, raises rate limit) |
+
+### 2. Add Variables (optional overrides)
+
+Under **Settings → Secrets and variables → Actions → Variables**:
+
+| Variable | Default |
+|---|---|
+| `LANGUAGES` | `Python,JavaScript,TypeScript` |
+| `HN_MIN_SCORE` | `50` |
+| `ISSUE_MIN_COMMENTS` | `5` |
+
+### 3. Trigger manually to test
+
+Go to **Actions → GitHub Trend Monitor → Run workflow** to fire it immediately and verify the email arrives.
+
+## Scheduling (Mac cron — alternative)
 
 ```bash
 crontab -e
@@ -69,11 +98,13 @@ Add this line (adjust path):
 
 ```
 github-trend-agent/
-├── main.py              # entry point — orchestrates all monitors
-├── github_monitor.py    # trending repos + hot issues
-├── hn_monitor.py        # Hacker News GitHub mentions
-├── email_sender.py      # Gmail SMTP email formatting + sending
-├── state.json           # auto-created — tracks seen items
+├── .github/workflows/
+│   └── trend-monitor.yml  # runs every 3 hours on GitHub Actions
+├── main.py                # entry point — orchestrates all monitors
+├── github_monitor.py      # trending repos + hot issues
+├── hn_monitor.py          # Hacker News GitHub mentions
+├── email_sender.py        # Gmail SMTP email formatting + sending
+├── state.json             # committed by Actions bot — tracks seen items
 ├── requirements.txt
 ├── .env.example
 ├── .gitignore
